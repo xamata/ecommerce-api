@@ -1,0 +1,18 @@
+version: "3.10"
+
+services:
+  web:
+    build: .
+    command: python3 manage.py runserver 0.0.0.0:8000
+    container_name: ecommerce_api
+    restart: always
+    volumes:
+      - .:/ecommerce_api
+    ports:
+      - "8000:8000"
+    networks:
+      - ecommerce_net
+
+networks:
+  ecommerce_net:
+    driver: bridge
