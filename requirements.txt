@@ -6,6 +6,7 @@ boto3==1.21.15
 botocore==1.24.15
 click==8.0.4
 Django==4.0.3
+django-filter==21.1
 django-storages==1.12.3
 graphene==2.1.9
 graphene-django==2.15.0
