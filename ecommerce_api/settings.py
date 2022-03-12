@@ -10,7 +10,7 @@ django.utils.encoding.force_text = force_str
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 # Quick-start development settings - unsuitable for production
@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "graphene_django",
     "user_controller",
+    "storages",
 ]
 
 AUTH_USER_MODEL = "user_controller.User"
@@ -124,37 +125,65 @@ USE_L10N = True
 
 USE_TZ = True
 
+USE_S3 = config("USE_S3")
+
+if USE_S3:
+    # aws settings
+    AWS_ACCESS_KEY_ID = config("AWS_S3_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = config("AWS_S3_SECRET_ACCESS_KEY")
+    AWS_STORAGE_BUCKET_NAME = config("AWS_STORAGE_BUCKET_NAME")
+    AWS_DEFAULT_ACL = None
+    AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+    AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
+    # s3 static settings
+    STATIC_LOCATION = "static"
+    STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{STATIC_LOCATION}/"
+    STATICFILES_STORAGE = "ecommerce_api.storage_backends.StaticStorage"
+    # s3 public media settings
+    PUBLIC_MEDIA_LOCATION = "media"
+    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{PUBLIC_MEDIA_LOCATION}/"
+    DEFAULT_FILE_STORAGE = "ecommerce_api.storage_backends.PublicMediaStorage"
+    # s3 private media settings
+    PRIVATE_MEDIA_LOCATION = "private"
+    PRIVATE_FILE_STORAGE = "ecommerce_api.storage_backends.PrivateMediaStorage"
+else:
+    STATIC_URL = "/staticfiles/"
+    STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+    MEDIA_URL = "/mediafiles/"
+    MEDIA_ROOT = os.path.join(BASE_DIR, "mediafiles")
+
+STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
+
 # AWS SETUP
-S3_BUCKET_URL = config("S3_BUCKET_URL")
+# S3_BUCKET_URL = config("S3_BUCKET_URL")
 # STATIC_ROOT = "staticfiles"
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
-AWS_ACCESS_KEY_ID = config("AWS_S3_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = config("AWS_S3_SECRET_ACCESS_KEY")
-AWS_STORAGE_BUCKET_NAME = config("AWS_STORAGE_BUCKET_NAME")
-AWS_HOST_REGION = config("AWS_HOST_REGION")
-AWS_S3_CUSTOM_DOMAIN = "%s.s3.amazonaws.com" % AWS_STORAGE_BUCKET_NAME
-AWS_DEFAULT_ACL = None
+# AWS_ACCESS_KEY_ID = config("AWS_S3_ACCESS_KEY_ID")
+# AWS_SECRET_ACCESS_KEY = config("AWS_S3_SECRET_ACCESS_KEY")
+# AWS_STORAGE_BUCKET_NAME = config("AWS_STORAGE_BUCKET_NAME")
+# AWS_HOST_REGION = config("AWS_HOST_REGION")
+# AWS_S3_CUSTOM_DOMAIN = "%s.s3.amazonaws.com" % AWS_STORAGE_BUCKET_NAME
+# AWS_DEFAULT_ACL = None
 
-AWS_LOCATION = "static"
+# AWS_LOCATION = "static"
 
-MEDIA_URL = "/media/"
+# MEDIA_URL = "/media/"
 
 
 # STATICFILES_DIRS = [
-#     os.path.join(BASE_DIR, "ecommerce_api/static"),
+#     os.path.join(BASE_DIR, "static"),
 # ]
 # STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
-STATIC_URL = "/static/"
+# # https://ecommerce-api-xamata.s3.amazonaws.com/static/
+# STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 
-STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 
+# AWS_S3_OBJECT_PARAMETERS = {
+#     "CacheControl": "max-age=86400",
+# }
 
-AWS_S3_OBJECT_PARAMETERS = {
-    "CacheControl": "max-age=86400",
-}
+# DEFAULT_FILE_STORAGE = "ecommerce_api.storage_backends.MediaStorage"
 
-DEFAULT_FILE_STORAGE = "ecommerce_api.storage_backends.MediaStorage"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
