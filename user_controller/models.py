@@ -7,10 +7,14 @@ from django.contrib.auth.models import (
     PermissionsMixin,
     BaseUserManager,
 )
+from django.core.exceptions import ObjectDoesNotExist
 
 
 class UserManager(BaseUserManager):
+    """Setting the parameters for all users"""
+
     def create_user(self, email, password, **extra_fields):
+        """verifies the entered data for the user"""
         if not email:
             raise ValueError("Email is required")
         email = self.normalize_email(email)
@@ -20,9 +24,12 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, password, **extra_fields):
+        """creates parameters for superuser and then verifies info"""
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
+        extra_fields.setdefault("first_name", "admin")
+        extra_fields.setdefault("last_name", "admin")
 
         if not extra_fields.get("is_staff", False):
             raise ValueError("Superuser must have is_staff=True")
@@ -33,7 +40,11 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
+    """Creates the parameters for our user"""
+
     email = models.EmailField(unique=True)
+    # first_name = models.CharField(max_length=100)
+    # last_name = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -49,3 +60,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     def save(self, *args, **kwargs):
         super().full_clean()
         super().save(*args, **kwargs)
+
+    class DoesNotExist(ObjectDoesNotExist):
+        """taken from django to raise exception"""
+
+        ...
