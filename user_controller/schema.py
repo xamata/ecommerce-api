@@ -49,7 +49,7 @@ class LoginUser(graphene.Mutation):
         email = graphene.String(required=True)
         password = graphene.String(required=True)
 
-    def muatate(self, info, email, password):
+    def mutate(self, info, email, password):
         """Mutation of the user info"""
         user = authenticate(username=email, password=password)
 
