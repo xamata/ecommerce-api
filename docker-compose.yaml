@@ -6,6 +6,8 @@ services:
     command: python3 manage.py runserver 0.0.0.0:8000
     container_name: ecommerce_api
     restart: always
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - .:/ecommerce_api
     ports:
